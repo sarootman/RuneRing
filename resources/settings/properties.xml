@@ -1,0 +1,6 @@
+<properties>
+    <property id="AccentColor" type="number">4</property>
+    <property id="NightMode" type="boolean">true</property>
+    <!-- 0 is the solar ring, noon at the top; 1 is the classic ring, midnight at the top -->
+    <property id="RingStyle" type="number">0</property>
+</properties>

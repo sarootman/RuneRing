@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
+    <!-- the id can be regenerated: Monkey C: Regenerate UUID -->
+    <iq:application id="4c7e2a9e-8f1b-4d6a-9b3e-2a51c0d7e913" type="watchface" name="@Strings.AppName" entry="RuneRingApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="4.2.0">
+        <iq:products>
+            <!-- id from SDK 9.x: Venu 4 45 mm. The 41 mm model needs its own id and its own fonts -->
+            <iq:product id="venu445mm"/>
+        </iq:products>
+        <iq:permissions>
+            <!-- needed for Body Battery -->
+            <!-- sleep schedule for the night screen -->
+            <!-- read Body Battery the way the native watch faces do -->
+            <iq:uses-permission id="ComplicationSubscriber"/>
+            <iq:uses-permission id="SensorHistory"/>
+            <iq:uses-permission id="UserProfile"/>
+        </iq:permissions>
+        <iq:languages>
+            <iq:language>eng</iq:language>
+            <iq:language>rus</iq:language>
+        </iq:languages>
+        <iq:barrels/>
+    </iq:application>
+</iq:manifest>

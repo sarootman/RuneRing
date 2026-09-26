@@ -1,0 +1,23 @@
+<strings>
+    <string id="AppName">Rune Ring</string>
+
+    <!-- Settings -->
+    <string id="AccentTitle">Цвет акцента</string>
+    <string id="Red">Красный</string>
+    <string id="Blue">Ледяной синий</string>
+    <string id="Bronze">Бронза</string>
+    <string id="Green">Хвоя</string>
+    <string id="Auto">Авто: по Body Battery</string>
+    <string id="NightTitle">Ночной экран по расписанию сна</string>
+    <string id="RingTitle">Кольцо рун</string>
+    <string id="RingSolar">Солнечное: полдень сверху</string>
+    <string id="RingClassic">Классическое: полночь сверху</string>
+
+    <!-- Date. Days start on Sunday (day_of_week = 1). Month abbreviations follow
+         GOST 7.12, which leaves March, May, June and July unabbreviated. These letters
+         must exist in the font: see days/months in tools/genfont.py.
+         DateFormat: $1$ weekday, $2$ day, $3$ month. -->
+    <string id="Days">ВС,ПН,ВТ,СР,ЧТ,ПТ,СБ</string>
+    <string id="Months">ЯНВ,ФЕВР,МАРТА,АПР,МАЯ,ИЮНЯ,ИЮЛЯ,АВГ,СЕНТ,ОКТ,НОЯБ,ДЕК</string>
+    <string id="DateFormat">$1$  $2$  $3$</string>
+</strings>

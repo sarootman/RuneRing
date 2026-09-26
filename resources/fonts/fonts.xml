@@ -1,0 +1,7 @@
+<fonts>
+    <!-- Cinzel (digits and Latin) + Forum (Cyrillic for the date), generated for
+         454×454, Venu 4 45 mm. The night and always-on screens reuse CinzelTime. -->
+    <font id="CinzelTime"  filename="cinzel_time.fnt"  antialias="true"/>
+    <font id="CinzelStats" filename="cinzel_stats.fnt" antialias="true"/>
+    <font id="CinzelDate"  filename="cinzel_date.fnt"  antialias="true"/>
+</fonts>

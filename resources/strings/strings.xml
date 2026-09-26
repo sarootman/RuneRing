@@ -1,0 +1,22 @@
+<strings>
+    <!-- English, and the fallback for every locale without its own folder.
+         Each locale must declare every id; there is no inheritance between them. -->
+    <string id="AppName">Rune Ring</string>
+    <string id="AccentTitle">Accent color</string>
+    <string id="Red">Red</string>
+    <string id="Blue">Ice blue</string>
+    <string id="Bronze">Bronze</string>
+    <string id="Green">Pine</string>
+    <string id="Auto">Auto: by Body Battery</string>
+    <string id="NightTitle">Night screen on sleep schedule</string>
+    <string id="RingTitle">Rune ring</string>
+    <string id="RingSolar">Solar: noon at top</string>
+    <string id="RingClassic">Classic: midnight at top</string>
+
+    <!-- Date in English order: weekday, month, day (FRI SEP 26). Days start on Sunday
+         (day_of_week = 1). The Latin letters come from en_days/en_months in
+         tools/genfont.py — anything missing there renders as nothing on the watch. -->
+    <string id="Days">SUN,MON,TUE,WED,THU,FRI,SAT</string>
+    <string id="Months">JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP,OCT,NOV,DEC</string>
+    <string id="DateFormat">$1$  $3$  $2$</string>
+</strings>

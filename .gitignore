@@ -1,0 +1,22 @@
+# Build output
+bin/
+gen/
+mir/
+internal-mir/
+*.prg
+*.prg.debug.xml
+*.iq
+
+# Simulator state
+RuneRing-settings.json
+
+# Developer key — must never be committed
+developer_key
+*.der
+*.pem
+
+# macOS
+.DS_Store
+
+# Working notes, not part of the published project
+CLAUDE.md
