@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
-    <!-- the id can be regenerated: Monkey C: Regenerate UUID -->
+    <!-- Do not touch this id once the app is published: the store treats a new id as a
+         different app, and updates stop reaching everyone who already installed it.
+         Before the first upload it can be regenerated with Monkey C: Regenerate UUID. -->
     <iq:application id="4c7e2a9e-8f1b-4d6a-9b3e-2a51c0d7e913" type="watchface" name="@Strings.AppName" entry="RuneRingApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="4.2.0">
         <iq:products>
             <!-- id from SDK 9.x: Venu 4 45 mm. The 41 mm model needs its own id and its own fonts -->
