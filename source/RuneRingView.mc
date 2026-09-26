@@ -62,7 +62,6 @@ const RUNES = [
     [-2,0,-2,10, 2,0,2,10, -2,0,2,10, 2,0,-2,10],              // ᛞ dagaz
     [0,0,2,3, 0,0,-2,3, 2,3,-2,8, -2,3,2,8]                    // ᛟ othala
 ];
-const RUNE_TIWAZ = 16;
 const RUNE_DAGAZ = 22;   // "dawn" — the rune of the night screen
 
 // Metrics of the generated Cinzel fonts, in pixels: the blank margin to the left
@@ -76,8 +75,19 @@ const CT_BOT  = 85;
 // Cinzel's Latin added a descender to that box ("J"), pushing the visible digits 3 px up.
 // tools/genfont.py prints this value on every regeneration.
 const CD_VDY  = 3;
-// The night screen and always-on use the same CinzelTime: a separate font differed
-// by 1 px (104 against 105) and cost as much memory as the main one.
+// The night and always-on screens carry nothing but the time, so it is set larger there:
+// CinzelAod, 100 px digits against 83 on the main dial. Metrics come from genfont.py.
+const CN_L    = [7, 7, 7, 7, 4, 5, 8, 3, 7, 7];
+const CN_R    = [7, 6, 4, 8, 5, 9, 7, 4, 7, 8];
+const CN_TOP  = 2;
+const CN_BOT  = 102;
+const CN_GAP  = 11;       // colon gap, scaled to the larger digits
+
+// Burn-in drift for the always-on screen: eight points on a small circle. Consecutive
+// minutes move about 3 px and the cycle closes, so nothing jumps. The first version
+// stepped along a diagonal and snapped 12 px back at the end of the cycle, which read
+// as the whole face twitching to the bottom right and back.
+const DRIFT = [4,0, 3,3, 0,4, -3,3, -4,0, -3,-3, 0,-4, 3,-3];
 
 // Indices of the runes used as icons
 const RUNE_ANSUZ  = 3;    // ᚨ mouth, message — notifications
@@ -126,6 +136,7 @@ class RuneRingView extends WatchUi.WatchFace {
     private var _dateFont as FontResource? = null;   // Cinzel + Forum (Cyrillic)
     private var _statsFont as FontResource? = null;
     private var _timeFont as FontResource? = null;
+    private var _aodFont as FontResource? = null;
     private var _nightEnabled as Boolean = true;
     private var _accentAuto as Boolean = true;
     private var _ringClassic as Boolean = false;   // midnight at the top instead of noon
@@ -210,6 +221,7 @@ class RuneRingView extends WatchUi.WatchFace {
         buildRing();
         // loadResource is typed as "any resource", so cast explicitly
         _timeFont  = WatchUi.loadResource(Rez.Fonts.CinzelTime) as FontResource;
+        _aodFont   = WatchUi.loadResource(Rez.Fonts.CinzelAod) as FontResource;
         _statsFont = WatchUi.loadResource(Rez.Fonts.CinzelStats) as FontResource;
         _dateFont  = WatchUi.loadResource(Rez.Fonts.CinzelDate) as FontResource;
 
@@ -313,7 +325,7 @@ class RuneRingView extends WatchUi.WatchFace {
         }
 
         if (_sleeping) {
-            drawAod(dc, hh, mm, clock.min);
+            drawAod(dc, hh, mm, clock.min, h24);
             return;
         }
         _mainScreen = true;
@@ -830,8 +842,9 @@ class RuneRingView extends WatchUi.WatchFace {
 
     // ---------- Always-on, the low-power screen ----------
 
-    private function drawAod(dc as Dc, hh as String, mm as String, minute as Number) as Void {
-        var font = _timeFont;
+    private function drawAod(dc as Dc, hh as String, mm as String, minute as Number,
+                             h24 as Number) as Void {
+        var font = _aodFont;
         var dateFont = _dateFont;
         if (font == null || dateFont == null) {
             return;
@@ -839,19 +852,24 @@ class RuneRingView extends WatchUi.WatchFace {
         // Shift the picture once a minute to protect the AMOLED panel from burn-in.
         // The step is derived from the minute rather than a call counter, which would
         // depend on how often the system wakes us.
-        var off = (minute % 5 - 2) * 3 * _s;
+        var k = (minute % 8) * 2;
+        var dx = DRIFT[k] * _s;
+        var dy = DRIFT[k + 1] * _s;
 
-        dc.setPenWidth(1);
+        // the same ætt head as on the main screen; this used to be hard-coded to ᛏ,
+        // which was only right between 16:00 and 24:00
+        // scaled to the larger always-on digits, and kept centred where it was
+        dc.setPenWidth(3);
         dc.setColor(_accent, Graphics.COLOR_TRANSPARENT);
-        drawRuneAt(dc, RUNE_TIWAZ, _cx + off, 128 * _s + off, 1.6 * _s);
+        drawRuneAt(dc, (h24 / 8) * 8, _cx + dx, 122 * _s + dy, 2.6 * _s);
 
-        drawDigits(dc, font, CT_L, CT_R, CT_TOP, CT_BOT,
-                   _cx + off, 215 * _s + off, hh, mm, _colonGap, 5 * _s, 16 * _s, COLOR_AOD, COLOR_AOD);
+        drawDigits(dc, font, CN_L, CN_R, CN_TOP, CN_BOT,
+                   _cx + dx, 215 * _s + dy, hh, mm, CN_GAP * _s, 6 * _s, 19 * _s, COLOR_AOD, COLOR_AOD);
 
         var text = _dateText;
         if (text != null) {
             dc.setColor(COLOR_AOD_DIM, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(_cx + off, 290 * _s + off + CD_VDY * _s, dateFont, text,
+            dc.drawText(_cx + dx, 296 * _s + dy + CD_VDY * _s, dateFont, text,
                         Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
         }
     }
@@ -873,7 +891,7 @@ class RuneRingView extends WatchUi.WatchFace {
     }
 
     private function drawNight(dc as Dc, hh as String, mm as String, minute as Number) as Void {
-        var font = _timeFont;
+        var font = _aodFont;
         var dateFont = _dateFont;
         if (font == null || dateFont == null) {
             return;
@@ -881,8 +899,9 @@ class RuneRingView extends WatchUi.WatchFace {
         // The burn-in shift is only needed in always-on, where the screen stays lit for
         // hours and updates arrive once a minute. An awake screen calls onUpdate once a
         // second, and a counter-driven shift made the whole face jump. So leave it still.
-        var off = _sleeping ? (minute % 5 - 2) * 3 * _s : 0.0;
-        var x = _cx + off;
+        var k = (minute % 8) * 2;
+        var off = _sleeping ? DRIFT[k + 1] * _s : 0.0;      // vertical part of the drift
+        var x = _cx + (_sleeping ? DRIFT[k] * _s : 0.0);
         // awake screen brighter, always-on muted
         var bright = _sleeping ? COLOR_NIGHT_AOD : COLOR_NIGHT;
         var dim    = _sleeping ? COLOR_NIGHT_DIM_AOD : COLOR_NIGHT_DIM;
@@ -894,12 +913,12 @@ class RuneRingView extends WatchUi.WatchFace {
         } else {
             dc.setPenWidth(3);
             dc.setColor(dim, Graphics.COLOR_TRANSPARENT);
-            drawRuneAt(dc, RUNE_DAGAZ, x, 118 * _s + off, 1.6 * _s);
+            drawRuneAt(dc, RUNE_DAGAZ, x, 112 * _s + off, 3.0 * _s);
         }
 
         // Time
-        drawDigits(dc, font, CT_L, CT_R, CT_TOP, CT_BOT,
-                   x, 222 * _s + off, hh, mm, _colonGap, 5 * _s, 16 * _s, bright, bright);
+        drawDigits(dc, font, CN_L, CN_R, CN_TOP, CN_BOT,
+                   x, 222 * _s + off, hh, mm, CN_GAP * _s, 6 * _s, 19 * _s, bright, bright);
 
         // Bottom: the bell and the wake-up time
         var nextY = 310 * _s;

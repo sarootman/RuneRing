@@ -8,8 +8,14 @@ Nothing is bitmap art: the runes are line segments computed at startup, so the w
 fits in about 32 KB of the 128 KB watch-face memory budget.
 
 <p align="center">
-  <img src="images/RuneRing.png" alt="Rune Ring on a Garmin Venu 4" width="420">
+  <img src="images/RuneRing.png" alt="The main dial" width="300">
 </p>
+<p align="center">
+  <img src="images/Sleep-mode.png" alt="The night screen" width="210">
+  &nbsp;&nbsp;
+  <img src="images/Allways-on.png" alt="The always-on screen" width="210">
+</p>
+<p align="center"><sub>The dial · the night screen · always-on</sub></p>
 
 ## The ring
 
@@ -58,8 +64,10 @@ red only, so it will not wreck your night vision: a moon when Do Not Disturb is 
 your wake-up time if an alarm is set, and the battery percentage. Two brightness levels —
 brighter when you actually raise your wrist, dimmer in always-on.
 
-**Always-on** shows the time in grey with the date, and shifts the whole picture by a few
-pixels every minute to protect the AMOLED panel from burn-in.
+**Always-on** shows the time in grey with the date and the rune of the current ætt. Both it
+and the night screen set the time in a larger face than the main dial — they carry nothing
+else, so there is room. The picture drifts around a small circle, one step per minute, to protect
+the AMOLED panel from burn-in.
 
 ## Settings
 

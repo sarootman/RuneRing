@@ -64,9 +64,10 @@ lat=''.join(sorted(set(''.join(en_days+en_months))))
 res={}
 cz=lambda s,w=500: load(os.path.join(FONTS,'Cinzel-wght.ttf'),s,w)
 res['time']=gen('cinzel_time',[(D,cz(105,500))])
-# cinzel_night was dropped: the night and always-on screens reuse cinzel_time. The separate
-# font differed by 1 px and cost the same memory.
-# To bring it back: res['night']=gen('cinzel_night',[(D,cz(104,500))])
+# cinzel_aod: the always-on and night screens carry nothing but the time, so it is set
+# larger there — 128 px against 105 on the main dial. An earlier cinzel_night at 104 px was
+# dropped as a pointless duplicate of cinzel_time; this one differs enough to earn its place.
+res['aod']=gen('cinzel_aod',[(D,cz(128,500))])
 res['stats']=gen('cinzel_stats',[(D+'%-',cz(30,600))])
 # date font: Cinzel digits and Latin, Forum Cyrillic scaled to the same cap height
 dig=cz(32,600); dh=ink(dig,'0'); dH=dh[3]-dh[1]
