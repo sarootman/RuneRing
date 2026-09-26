@@ -92,8 +92,19 @@ const COLOR_TRACK = 0x262626;   // the empty part of the battery strip
 // It used to be 214.5, the midpoint between the strip at 131 and the icons at 298,
 // which left the time 12.5 px high. Heart rate and Body Battery follow this value.
 const TIME_CY  = 227.0;
-const SIDE_X   = 157;     // heart rate and Body Battery, this far left and right of centre
+const SIDE_X   = 157;     // nominal column for heart rate and Body Battery; layoutTime() refines it
+const RING_INNER = 191;   // innermost rune pixel sits at radius 193, keep 2 px clear of it
 const BOTTOM_X = 62;      // steps and calories, the two bottom columns
+// The bottom block keeps the same distance from the time as the row above it: the time ink
+// ends at 268.5, the topmost ink below is the calories rune at BOTTOM_ICON_Y - 12, so both
+// gaps come out at 15 px. Values stay 30 px under the icons, as before.
+const BOTTOM_ICON_Y = 295.5;
+const BOTTOM_VAL_Y  = 325.5;
+// The ætt rune is the signature mark of the face, so it is drawn larger than the metric
+// runes and centred in what is left between the values (ink ends at 338) and the ring
+// (its innermost pixel at the bottom is y 420).
+const AETT_Y    = 368;
+const AETT_UNIT = 2.2;
 // The stress-and-notifications row sits between the battery strip (131) and the time
 // digits (185.5): with an 18 px rune and 25 px digits, 18 px of air is left above and below.
 const TOP_ROW_Y = 158;
@@ -129,6 +140,9 @@ class RuneRingView extends WatchUi.WatchFace {
     private var _timeCy as Float = 0.0;
     private var _sideX as Float = 0.0;
     private var _bottomX as Float = 0.0;
+    private var _colonGap as Float = 13.0;         // gap each side of the colon
+    private var _timeLaidOut as Boolean = false;
+    private var _layoutIs24h as Boolean = false;
     private var _ringR as Float = 0.0;
 
     // Data that only needs refreshing once a minute
@@ -266,6 +280,14 @@ class RuneRingView extends WatchUi.WatchFace {
         var nc    = ds.notificationCount;
         _notif    = (nc != null) ? nc : 0;
 
+        // The widest possible time depends on the clock format, and the side metrics
+        // are placed against it. Recomputed only when the format changes.
+        if (!_timeLaidOut || _is24h != _layoutIs24h) {
+            _layoutIs24h = _is24h;
+            _timeLaidOut = true;
+            layoutTime(dc);
+        }
+
         // While the screen is awake onUpdate runs once a second, but the date, battery,
         // Body Battery and sleep schedule do not change anywhere near that often
         if (clock.min != _lastMin) {
@@ -308,11 +330,11 @@ class RuneRingView extends WatchUi.WatchFace {
         drawTime(dc, hh, mm);
         drawStats(dc, _lastBB, bbCol);
 
-        dc.setPenWidth(2);
+        dc.setPenWidth(3);
         dc.setColor(_accent, Graphics.COLOR_TRANSPARENT);
         // Head rune of the current ætt: 00–07 ᚠ (Freyr), 08–15 ᚺ (Hagal/Heimdall), 16–23 ᛏ (Týr).
         // Rune i is hour i, so the head of the ætt is the rune at (hour / 8) * 8.
-        drawRuneAt(dc, (h24 / 8) * 8, _cx, 376 * _s, 1.5 * _s);
+        drawRuneAt(dc, (h24 / 8) * 8, _cx, AETT_Y * _s, AETT_UNIT * _s);
     }
 
     // ---------- Elements ----------
@@ -408,6 +430,56 @@ class RuneRingView extends WatchUi.WatchFace {
         dc.drawLine(_cx + r, y, _cx, y + r);
         dc.drawLine(_cx, y + r, _cx - r, y);
         dc.drawLine(_cx - r, y, _cx, y - r);
+    }
+
+    // Where the side metrics stand depends on how wide the time can get. In 24-hour
+    // format the time is 26 px wider than in 12-hour, and with three-digit values
+    // (heart rate over 100, Body Battery at 100) only 1.5 px was left between them.
+    // The column is placed in the middle of the corridor between the widest possible
+    // time and the rune ring, so nothing moves as the digits change. Widths come from
+    // the font itself, so regenerating it cannot put the layout out of step.
+    private function layoutTime(dc as Dc) as Void {
+        var font = _timeFont;
+        if (font == null) {
+            return;
+        }
+        // a tighter colon buys back 4 px of half-width where it is needed most
+        _colonGap = (_is24h ? 9 : 13) * _s;
+
+        var adv = new Array<Number>[10];
+        for (var d = 0; d < 10; d++) {
+            adv[d] = dc.getTextWidthInPixels(d.format("%d"), font);
+        }
+
+        var maxHour = 0;
+        if (_is24h) {
+            for (var h = 0; h < 24; h++) {
+                var w = inkWidth(adv, h.format("%02d"));
+                if (w > maxHour) { maxHour = w; }
+            }
+        } else {
+            for (var h = 1; h <= 12; h++) {
+                var w = inkWidth(adv, h.format("%d"));
+                if (w > maxHour) { maxHour = w; }
+            }
+        }
+        var maxMin = 0;
+        for (var m = 0; m < 60; m++) {
+            var w = inkWidth(adv, m.format("%02d"));
+            if (w > maxMin) { maxMin = w; }
+        }
+
+        var half = (maxHour + 2 * _colonGap + maxMin) / 2.0;
+        _sideX = ((half + RING_INNER * _s) / 2.0).toFloat();
+    }
+
+    // Visible width of a digit string: advances minus the blank margins at both ends
+    private function inkWidth(adv as Array<Number>, text as String) as Number {
+        var w = 0;
+        for (var i = 0; i < text.length(); i++) {
+            w += adv[digitAt(text, i)];
+        }
+        return w - CT_L[digitAt(text, 0)] - CT_R[digitAt(text, text.length() - 1)];
     }
 
     // Draws "hh : mm" so that the visible digits are exactly centred on (cx, cy).
@@ -523,7 +595,7 @@ class RuneRingView extends WatchUi.WatchFace {
         }
         var cy = _timeCy;
         drawDigits(dc, font, CT_L, CT_R, CT_TOP, CT_BOT,
-                   _cx, cy, hh, mm, 13 * _s, 5 * _s, 16 * _s, COLOR_TEXT, _accent);
+                   _cx, cy, hh, mm, _colonGap, 5 * _s, 16 * _s, COLOR_TEXT, _accent);
     }
 
     // Accent from Body Battery: 80+ blue → 50 bronze → 20 and below red
@@ -563,7 +635,7 @@ class RuneRingView extends WatchUi.WatchFace {
                 return Complications.COMPLICATION_TYPE_STRESS;
             }
         }
-        if (y >= 285 * _s && y <= 360 * _s) {
+        if (y >= 275 * _s && y <= 350 * _s) {
             if ((x - (_cx - bx)).abs() <= 50 * _s) { return Complications.COMPLICATION_TYPE_STEPS; }
             if ((x - (_cx + bx)).abs() <= 50 * _s) { return Complications.COMPLICATION_TYPE_CALORIES; }
         }
@@ -577,8 +649,8 @@ class RuneRingView extends WatchUi.WatchFace {
         var cy = _timeCy;
         var side = _sideX;
         var bx = _bottomX;
-        var iconY = 308 * _s;
-        var valY = 338 * _s;
+        var iconY = BOTTOM_ICON_Y * _s;
+        var valY = BOTTOM_VAL_Y * _s;
 
         var am = ActivityMonitor.getInfo();
         var steps = am.steps;
@@ -774,7 +846,7 @@ class RuneRingView extends WatchUi.WatchFace {
         drawRuneAt(dc, RUNE_TIWAZ, _cx + off, 128 * _s + off, 1.6 * _s);
 
         drawDigits(dc, font, CT_L, CT_R, CT_TOP, CT_BOT,
-                   _cx + off, 215 * _s + off, hh, mm, 13 * _s, 5 * _s, 16 * _s, COLOR_AOD, COLOR_AOD);
+                   _cx + off, 215 * _s + off, hh, mm, _colonGap, 5 * _s, 16 * _s, COLOR_AOD, COLOR_AOD);
 
         var text = _dateText;
         if (text != null) {
@@ -827,7 +899,7 @@ class RuneRingView extends WatchUi.WatchFace {
 
         // Time
         drawDigits(dc, font, CT_L, CT_R, CT_TOP, CT_BOT,
-                   x, 222 * _s + off, hh, mm, 13 * _s, 5 * _s, 16 * _s, bright, bright);
+                   x, 222 * _s + off, hh, mm, _colonGap, 5 * _s, 16 * _s, bright, bright);
 
         // Bottom: the bell and the wake-up time
         var nextY = 310 * _s;

@@ -7,23 +7,9 @@ instead of an icon.
 Nothing is bitmap art: the runes are line segments computed at startup, so the whole face
 fits in about 32 KB of the 128 KB watch-face memory budget.
 
-```
-           ᛇ  ᛈ  ᛉ  ᛊ  …          ring of 24 runes, one per hour
-
-         ПТ  26  СЕНТ             date
-     ────────◆────────            watch battery
-           ᚾ 34  ᚨ 3              stress · unread messages
-
-            10:47                 time
-
-   ♥ 62              ᛊ 74         heart rate · Body Battery
-
-      ᚱ 8214    ᚲ 1976            steps · calories
-             ᚠ                    rune of the current ætt
-```
-
-Screenshots will follow with the first store beta. To capture one from the simulator:
-**File → Save Screenshot**.
+<p align="center">
+  <img src="images/RuneRing.png" alt="Rune Ring on a Garmin Venu 4" width="420">
+</p>
 
 ## The ring
 
@@ -54,6 +40,7 @@ evening is this project's idea, not a historical tradition.
 | Notifications ᚨ | `notificationCount` | Only shown when something is unread |
 | Time | `getClockTime` | Cinzel, centred on its visible pixels |
 | Heart rate ♥ | `Activity.getActivityInfo` | Always red |
+| | | Side columns are placed against the widest time the current clock format can produce |
 | Body Battery ᛊ | Complications → `SensorHistory` | Rune coloured by level |
 | Steps ᚱ, calories ᚲ | `ActivityMonitor` | |
 
@@ -113,6 +100,14 @@ java -jar "$SDK/bin/monkeybrains.jar" -o bin/RuneRing.prg -f monkey.jungle \
 # release build for the watch
 java -jar "$SDK/bin/monkeybrains.jar" -o bin/RuneRing.prg -f monkey.jungle \
      -y ../developer_key -d venu445mm -r -w
+```
+
+To run a build in the simulator, start it and push the executable — note that the plain
+device id is used here, not the `_sim` one, which only the compiler understands:
+
+```bash
+"$SDK/bin/connectiq" &          # start the simulator
+"$SDK/bin/monkeydo" bin/RuneRing.prg venu445mm
 ```
 
 The source is clean at the strictest type-check level; please keep it that way:
@@ -184,7 +179,6 @@ tools/
 
 ## Roadmap
 
-- 24-hour layout: at that width the clock leaves only 1.5 px next to the side metrics
 - Sunrise and sunset as marks on the ring
 - Step goal lighting up runes as you approach it
 - Venu 4 41 mm support (needs its own fonts at 390×390)
