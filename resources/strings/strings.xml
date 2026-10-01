@@ -19,4 +19,13 @@
     <string id="Days">SUN,MON,TUE,WED,THU,FRI,SAT</string>
     <string id="Months">JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP,OCT,NOV,DEC</string>
     <string id="DateFormat">$1$  $3$  $2$</string>
+    <string id="NightStartTitle">Night starts</string>
+    <string id="WakeWeekdayTitle">Wake-up, Monday to Friday</string>
+    <string id="WakeWeekendTitle">Wake-up, Saturday and Sunday</string>
+    <string id="TimePrompt">24-hour time, for example 07:30</string>
+    <string id="NightSourceTitle">What turns the night screen on</string>
+    <string id="NightSourcePrompt">On current watches the sleep schedule in the profile is not wired to the per-day schedule on the watch itself, so it is no longer the default.</string>
+    <string id="NightSourceProfile">Sleep schedule in Garmin Connect</string>
+    <string id="NightSourceManual">The times set below</string>
+    <string id="NightSourceDnd">Do Not Disturb, which Sleep Mode switches on</string>
 </strings>

@@ -20,4 +20,13 @@
     <string id="Days">ВС,ПН,ВТ,СР,ЧТ,ПТ,СБ</string>
     <string id="Months">ЯНВ,ФЕВР,МАРТА,АПР,МАЯ,ИЮНЯ,ИЮЛЯ,АВГ,СЕНТ,ОКТ,НОЯБ,ДЕК</string>
     <string id="DateFormat">$1$  $2$  $3$</string>
+    <string id="NightStartTitle">Ночь начинается</string>
+    <string id="WakeWeekdayTitle">Подъём с понедельника по пятницу</string>
+    <string id="WakeWeekendTitle">Подъём в субботу и воскресенье</string>
+    <string id="TimePrompt">Время в 24-часовом формате, например 07:30</string>
+    <string id="NightSourceTitle">Чем включается ночной экран</string>
+    <string id="NightSourcePrompt">На нынешних часах расписание сна из профиля не связано с расписанием по дням в самих часах, поэтому оно больше не вариант по умолчанию.</string>
+    <string id="NightSourceProfile">Расписание сна в Garmin Connect</string>
+    <string id="NightSourceManual">Временами, заданными ниже</string>
+    <string id="NightSourceDnd">Режимом «Не беспокоить», его включает Sleep Mode</string>
 </strings>

@@ -59,7 +59,12 @@ Runes are chosen for meaning, not decoration: ᚾ *naudiz* (need, constraint) fo
 
 ## Night and always-on
 
-**Night screen** takes over inside the sleep window from your Garmin Connect profile. It is
+**Night screen** takes over when you are asleep. Three ways to decide that, in the settings.
+By default, hours you set yourself, with a later wake-up at weekends — Friday evening is
+governed by Saturday's. Or follow Do Not Disturb, which Sleep Mode switches on, so it tracks
+the per-day schedule on the watch without typing anything. The sleep schedule in the Garmin
+Connect profile is still offered, but on current watches those fields are not wired to the
+schedule the watch actually uses, so they are no longer the default. It is
 red only, so it will not wreck your night vision: a moon when Do Not Disturb is on, the time,
 your wake-up time if an alarm is set, and the battery percentage. Two brightness levels —
 brighter when you actually raise your wrist, dimmer in always-on.
@@ -76,6 +81,8 @@ the AMOLED panel from burn-in.
 | Accent colour | Red, ice blue, bronze, pine, or auto | Auto |
 | Rune ring | Solar or classic | Solar |
 | Night screen | On or off | On |
+| What turns night on | The Garmin Connect sleep schedule, the times below, or Do Not Disturb | The times below |
+| Night starts / wake-up | HH:MM, with a separate wake-up for weekends | 22:00 / 07:00 / 08:00 |
 
 With **auto**, the accent follows Body Battery: blue above 80, bronze around 50, red at 20
 and below. The accent tints the colon, the diamond on the battery strip, the current hour's

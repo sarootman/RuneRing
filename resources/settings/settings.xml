@@ -17,4 +17,24 @@
     <setting propertyKey="@Properties.NightMode" title="@Strings.NightTitle">
         <settingConfig type="boolean"/>
     </setting>
+    <setting propertyKey="@Properties.NightSource" title="@Strings.NightSourceTitle"
+             prompt="@Strings.NightSourcePrompt">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.NightSourceProfile</listEntry>
+            <listEntry value="1">@Strings.NightSourceManual</listEntry>
+            <listEntry value="2">@Strings.NightSourceDnd</listEntry>
+        </settingConfig>
+    </setting>
+    <setting propertyKey="@Properties.NightStart" title="@Strings.NightStartTitle"
+             prompt="@Strings.TimePrompt">
+        <settingConfig type="alphaNumeric" maxLength="5"/>
+    </setting>
+    <setting propertyKey="@Properties.WakeWeekday" title="@Strings.WakeWeekdayTitle"
+             prompt="@Strings.TimePrompt">
+        <settingConfig type="alphaNumeric" maxLength="5"/>
+    </setting>
+    <setting propertyKey="@Properties.WakeWeekend" title="@Strings.WakeWeekendTitle"
+             prompt="@Strings.TimePrompt">
+        <settingConfig type="alphaNumeric" maxLength="5"/>
+    </setting>
 </settings>

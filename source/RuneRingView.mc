@@ -119,6 +119,11 @@ const AETT_UNIT = 2.2;
 // digits (185.5): with an 18 px rune and 25 px digits, 18 px of air is left above and below.
 const TOP_ROW_Y = 158;
 
+// What decides that it is night
+const NIGHT_PROFILE = 0;   // sleepTime/wakeTime from the Garmin Connect profile
+const NIGHT_MANUAL  = 1;   // the times in the settings
+const NIGHT_DND     = 2;   // Do Not Disturb, which Sleep Mode switches on
+
 // Colours for the automatic accent: plenty of energy → blue, middling → bronze, low → red
 const BB_HIGH = 0x4FA8E0;
 const BB_MID  = 0xB8925A;
@@ -140,6 +145,10 @@ class RuneRingView extends WatchUi.WatchFace {
     private var _nightEnabled as Boolean = true;
     private var _accentAuto as Boolean = true;
     private var _ringClassic as Boolean = false;   // midnight at the top instead of noon
+    private var _nightSource as Number = NIGHT_MANUAL;
+    private var _nightStartText as String = "22:00";
+    private var _wakeWeekdayText as String = "07:00";
+    private var _wakeWeekendText as String = "08:00";
     private var _layoutReady as Boolean = false;
 
     // Localisation: day names, month names and the word order of the date come from resources
@@ -162,8 +171,11 @@ class RuneRingView extends WatchUi.WatchFace {
     private var _batt as Number = 0;
     private var _lastBB as Number? = null;   // last known Body Battery reading
     private var _stress as Number? = null;   // last known stress level
-    private var _sleepSec as Number? = null; // sleep window from the user profile
-    private var _wakeSec as Number? = null;
+    private var _sleepSec as Number? = null;    // start of the night window
+    private var _wakeWeekday as Number? = null; // end of it, Monday to Friday
+    private var _wakeWeekend as Number? = null; // end of it, Saturday and Sunday
+    private var _wakeNow as Number? = null;     // the one that applies to the night we are in
+    private var _dow as Number = 1;             // 1 = Sunday … 7 = Saturday
 
     // Snapshot of DeviceSettings for the current frame
     private var _is24h as Boolean = false;
@@ -198,6 +210,15 @@ class RuneRingView extends WatchUi.WatchFace {
         var n = Application.Properties.getValue("NightMode");
         _nightEnabled = (n instanceof Boolean) ? n : true;
 
+        // The sleep schedule in the profile is one pair of times for the whole week, which is
+        // all Connect IQ exposes. These let the window be set by hand instead, with a later
+        // wake-up at weekends.
+        var src = Application.Properties.getValue("NightSource");
+        _nightSource = (src instanceof Number && src >= 0 && src <= 2) ? src : NIGHT_MANUAL;
+        _nightStartText   = textProperty("NightStart", "22:00");
+        _wakeWeekdayText  = textProperty("WakeWeekday", "07:00");
+        _wakeWeekendText  = textProperty("WakeWeekend", "08:00");
+
         // The ring is rebuilt only when the style changes, and only once the screen size is known
         var r = Application.Properties.getValue("RingStyle");
         var classic = (r instanceof Number) && (r == 1);
@@ -207,6 +228,42 @@ class RuneRingView extends WatchUi.WatchFace {
                 buildRing();
             }
         }
+    }
+
+    private function textProperty(key as String, fallback as String) as String {
+        var v = Application.Properties.getValue(key);
+        return (v instanceof String && v.length() > 0) ? v : fallback;
+    }
+
+    // "7:30", "07:30" or "7" into seconds from midnight; null if it makes no sense
+    private function parseTimeOfDay(text as String) as Number? {
+        var h = 0;
+        var m = 0;
+        var i = text.find(":");
+        if (i == null) {
+            var n = text.toNumber();
+            if (n == null) {
+                return null;
+            }
+            h = n;
+        } else {
+            var hs = text.substring(0, i);
+            var ms = text.substring(i + 1, text.length());
+            if (hs == null || ms == null) {
+                return null;
+            }
+            var hn = hs.toNumber();
+            var mn = ms.toNumber();
+            if (hn == null || mn == null) {
+                return null;
+            }
+            h = hn;
+            m = mn;
+        }
+        if (h < 0 || h > 23 || m < 0 || m > 59) {
+            return null;
+        }
+        return h * 3600 + m * 60;
     }
 
     function onLayout(dc as Dc) as Void {
@@ -317,6 +374,8 @@ class RuneRingView extends WatchUi.WatchFace {
             hh = hour.format("%d");
         }
         var mm = clock.min.format("%02d");
+
+        _wakeNow = wakeForTonight(h24, clock.min);
 
         _mainScreen = false;
         if (_nightEnabled && isNightTime(h24, clock.min)) {
@@ -752,20 +811,49 @@ class RuneRingView extends WatchUi.WatchFace {
 
     // Date, battery, Body Battery and the sleep schedule: once a minute is enough.
     private function refreshSlowData() as Void {
-        _dateText = dateText(Gregorian.info(Time.now(), Time.FORMAT_SHORT));
+        var info = Gregorian.info(Time.now(), Time.FORMAT_SHORT);
+        _dateText = dateText(info);
         _batt = System.getSystemStats().battery.toNumber();
         pollBodyBattery();
         pollStress();
 
-        // no reason to read the profile every second either
-        var p = UserProfile.getProfile();
-        if (p != null && p.sleepTime != null && p.wakeTime != null) {
-            _sleepSec = (p.sleepTime as Time.Duration).value();
-            _wakeSec  = (p.wakeTime as Time.Duration).value();
+        _dow = info.day_of_week as Number;
+
+        if (_nightSource == NIGHT_PROFILE) {
+            // no reason to read the profile every second either
+            var p = UserProfile.getProfile();
+            if (p != null && p.sleepTime != null && p.wakeTime != null) {
+                _sleepSec = (p.sleepTime as Time.Duration).value();
+                _wakeWeekday = (p.wakeTime as Time.Duration).value();
+                _wakeWeekend = _wakeWeekday;
+            } else {
+                _sleepSec = null;
+                _wakeWeekday = null;
+                _wakeWeekend = null;
+            }
         } else {
-            _sleepSec = null;
-            _wakeSec  = null;
+            // the manual times are parsed for the DND source too: the trigger differs, but
+            // the wake-up shown beside the bell still has to come from somewhere
+            _sleepSec    = parseTimeOfDay(_nightStartText);
+            _wakeWeekday = parseTimeOfDay(_wakeWeekdayText);
+            _wakeWeekend = parseTimeOfDay(_wakeWeekendText);
         }
+    }
+
+    // Which wake-up ends the night we are currently in. Past bedtime the night belongs to
+    // tomorrow morning, so Friday evening is governed by Saturday's later wake-up.
+    private function wakeForTonight(h24 as Number, minute as Number) as Number? {
+        var sleep = _sleepSec;
+        var weekday = _wakeWeekday;
+        var weekend = _wakeWeekend;
+        if (sleep == null || weekday == null || weekend == null) {
+            return null;
+        }
+        var dow = _dow;
+        if (h24 * 3600 + minute * 60 >= sleep) {
+            dow = (dow % 7) + 1;
+        }
+        return (dow == 1 || dow == 7) ? weekend : weekday;   // 1 Sunday, 7 Saturday
     }
 
     private function getHeartRate() as Number? {
@@ -878,8 +966,11 @@ class RuneRingView extends WatchUi.WatchFace {
 
     // Sleep window from the Garmin Connect profile, refreshed in refreshSlowData()
     private function isNightTime(h24 as Number, minute as Number) as Boolean {
+        if (_nightSource == NIGHT_DND) {
+            return _dnd;
+        }
         var sleep = _sleepSec;
-        var wake = _wakeSec;
+        var wake = _wakeNow;
         if (sleep == null || wake == null) {
             return false;
         }
@@ -939,11 +1030,11 @@ class RuneRingView extends WatchUi.WatchFace {
         dc.drawText(x, nextY + off + CD_VDY * _s, dateFont, _batt.format("%d") + "%", j);
     }
 
-    // Wake-up time from the sleep schedule in Garmin Connect.
-    // Connect IQ does not give watch faces the actual alarm time,
-    // so this is the closest thing available.
+    // The wake-up time that ends tonight — from the settings, or from the Garmin Connect
+    // sleep schedule. Connect IQ never exposes the time of the alarm itself, only whether
+    // any alarm is set at all (alarmCount), which is what gates the bell.
     private function wakeTimeText() as String? {
-        var secs = _wakeSec;
+        var secs = _wakeNow;
         if (secs == null) {
             return null;
         }

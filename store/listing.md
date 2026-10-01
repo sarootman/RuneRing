@@ -3,8 +3,12 @@
 Copy-paste source for apps.garmin.com. Keep this file in step with the app.
 
 - **Name:** Rune Ring
-- **Category:** Watch Faces
-- **Version:** 1.0.0
+- **Category:** Digital (Цифровое) — chosen over Utility: the store category is how buyers
+  find the face, and against data dashboards it would be judged on metric count, which is not
+  what this face competes on. Add Stylish as a second one if the form allows several.
+- **Store listing:** https://apps.garmin.com/ru-RU/apps/35f0121e-ae2c-46c2-9161-0fe81a3241da
+  (the store's own listing id — unrelated to the application id in manifest.xml)
+- **Version:** 1.0.1
 - **Device:** Venu 4 45 mm (also covers D2 Air X15 — same device group)
 - **Languages declared:** English (default), Russian
 - **Tags:** runes, norse, viking, elder futhark, 24 hour, body battery, stress, minimal, amoled
@@ -52,7 +56,9 @@ spare the AMOLED panel.
 SETTINGS
 Accent colour — red, ice blue, bronze, pine, or automatic, in which case it follows Body
 Battery from blue through bronze to red as your reserves drain. Ring orientation. Night screen
-on or off.
+on or off, and what turns it on: hours you set yourself with a later wake-up at weekends, or
+Do Not Disturb, which Sleep Mode switches on and which therefore follows the per-day schedule
+on the watch.
 
 Fonts: Cinzel and Forum, both under the SIL Open Font License 1.1.
 
@@ -98,13 +104,40 @@ Fonts: Cinzel and Forum, both under the SIL Open Font License 1.1.
 НАСТРОЙКИ
 Цвет акцента — красный, ледяной синий, бронза, хвоя или автоматический: тогда он идёт за Body
 Battery от синего через бронзу к красному по мере того, как садятся силы. Ориентация кольца.
-Ночной экран можно выключить.
+Ночной экран можно выключить или выбрать, чем он включается: заданными вручную часами с
+отдельным подъёмом по выходным — или режимом «Не беспокоить», который включает Sleep Mode,
+а значит, следует расписанию по дням прямо из часов.
 
 Шрифты: Cinzel и Forum, оба под лицензией SIL Open Font License 1.1.
 
 ---
 
-## Release notes 1.0.0
+## Release notes
+
+### 1.0.1
+
+**English:**
+
+The night screen no longer relies on the sleep schedule in the Garmin Connect profile. On
+current watches those fields are not connected to the per-day schedule the watch itself
+follows, so the night screen could end at the wrong hour and always showed the same wake-up
+time beside the bell.
+
+You can now choose what turns it on: hours you set yourself, with a separate wake-up for
+Saturday and Sunday, or Do Not Disturb — which Sleep Mode switches on, so it follows the
+schedule set on the watch without entering anything twice.
+
+**Russian:**
+
+Ночной экран больше не зависит от расписания сна в профиле Garmin Connect. На нынешних часах
+эти поля не связаны с расписанием по дням в самих часах, поэтому ночь заканчивалась не в то
+время, а рядом с колокольчиком всегда стояло одно и то же время подъёма.
+
+Теперь можно выбрать, чем он включается: заданными вручную часами с отдельным подъёмом в
+субботу и воскресенье — или режимом «Не беспокоить», который включает Sleep Mode, а значит
+следует расписанию из самих часов, и вводить времена дважды не придётся.
+
+### 1.0.0
 
 **English:** First release.
 

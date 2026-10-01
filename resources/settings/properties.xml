@@ -3,4 +3,14 @@
     <property id="NightMode" type="boolean">true</property>
     <!-- 0 is the solar ring, noon at the top; 1 is the classic ring, midnight at the top -->
     <property id="RingStyle" type="number">0</property>
+    <!-- What decides that it is night. 0 — the sleep schedule in the Garmin Connect profile;
+         on current watches those legacy fields are not wired to the per-day Sleep Mode
+         schedule and return defaults, so they are no longer the default here. 1 — the times
+         below, with a later wake-up at weekends. 2 — follow Do Not Disturb, which Sleep Mode
+         switches on, so it tracks the real schedule without typing anything.
+         Times are "HH:MM", 24-hour. -->
+    <property id="NightSource" type="number">1</property>
+    <property id="NightStart" type="string">22:00</property>
+    <property id="WakeWeekday" type="string">07:00</property>
+    <property id="WakeWeekend" type="string">08:00</property>
 </properties>
